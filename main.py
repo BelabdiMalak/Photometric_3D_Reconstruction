@@ -11,14 +11,14 @@ def fileToMatrix(path):
     return matrix
 
 
-def fileNames(path):
+# Extract the images names from a file
+def imgNames(path):
     with open(path, 'r', encoding='utf-8') as file:
         names = file.readlines()
         return [name.strip('\n') for name in names]
     
 
-
-# From a mask image, return a binary matrix (image) were 1 defines a pixel of the object, 0 a pixel of the background
+# From a mask image, return a binary matrix were 1 defines a pixel of the object, 0 a pixel of the background
 def binaryMatrix(path):
     mask = cv.imread(path, cv.IMREAD_UNCHANGED)
     if mask is None: 
@@ -29,22 +29,26 @@ def binaryMatrix(path):
         cv.imwrite("data/binaryMask.png", binaryMask)
         print(binaryMask[100])
 
+
+# Return a table containing all the images after treatment
 def loadImages(imagesPath, intensitiesPath):
     lightIntensities = fileToMatrix(intensitiesPath)
     i = 0
-    for name in fileNames(imagesPath):
+    images=[]
+    for name in imgNames(imagesPath):
         img = cv.imread("data/"+name, cv.IMREAD_UNCHANGED)
         if img is None:
             print('Couldn\'t load '+ name + 'image')
         else: 
-            print(i)
-            imgNormalized = cv.normalize(img, None, 0, 1, cv.NORM_MINMAX, dtype=cv.CV_32F)
             h, w, c = img.shape
-            print(len(lightIntensities))
+            # unit16 => Float32
+            imgNormalized = cv.normalize(img, None, 0, 1, cv.NORM_MINMAX, dtype=cv.CV_32F)
             imgNormalized[:,:,0] = imgNormalized[:,:,0] / lightIntensities[i][2]
             imgNormalized[:,:,1] = imgNormalized[:,:,1] / lightIntensities[i][1]
             imgNormalized[:,:,2] = imgNormalized[:,:,2] / lightIntensities[i][0] 
-            i+=1
             imgGreyScale = cv.cvtColor(imgNormalized, cv.COLOR_BGR2GRAY)
+            # image dimension: (h, w, c) => (h*w,)
+            images.append(imgGreyScale.flatten())
+            i+=1
+    return images
 
-loadImages('data/filenames.txt', 'data/light_intensities.txt')
