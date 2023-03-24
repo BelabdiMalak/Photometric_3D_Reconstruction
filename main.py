@@ -19,7 +19,7 @@ def imgNames(path):
     
 
 # From a mask image, return a binary matrix were 1 defines a pixel of the object, 0 a pixel of the background
-def binaryMatrix(path):
+def binaryMask(path):
     mask = cv.imread(path, cv.IMREAD_UNCHANGED)
     if mask is None: 
         print('Couldn\'t load the mask object')
@@ -30,7 +30,7 @@ def binaryMatrix(path):
         print(binaryMask[100])
 
 
-# Return a table containing all the images after treatment
+# Return a table(96,h*w) containing all the images after treatment
 def loadImages(imagesPath, intensitiesPath):
     lightIntensities = fileToMatrix(intensitiesPath)
     i = 0
@@ -52,3 +52,11 @@ def loadImages(imagesPath, intensitiesPath):
             i+=1
     return images
 
+
+# Get the normal vector (x,y,z) of every pixel of all images (313344 pixels)
+def needleMap(directionsPath, intensitiesPath,imagesPath):
+    # get the inverse of light directions matrix (from 96*3 to 3*96)
+    lightDirectionsInv = np.linalg.pinv(fileToMatrix(directionsPath))
+    images = loadImages(imagesPath,intensitiesPath)
+    normals = np.dot(lightDirectionsInv, images)
+    return normals
