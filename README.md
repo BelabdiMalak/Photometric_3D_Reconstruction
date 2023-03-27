@@ -41,9 +41,9 @@ opencv) on 16 bits.
 ---
 
 ## Steps 
-To the 3D object I followed the following steps :
-1. Normalize images values from **unit16** to **float32**, because the 96 images are too dark, normalization will make them clear. Add to that,we need float values to apply mathematical operations on our images. 
-2. Divide each pixel by the correspending light intensity (shading correction in ImageJ to remove local fluorescent light intensity variations due to camera issues).
-3. To make our calculations less complex, we convert images into grey scale (convey less information than RGB).
-4. Get the normal vectors of all pixels of the object : 
-5. Change the scale to [0-255].
+To create the 3D object I followed the following steps :
+1. **Normalize** images values from **unit16** to **float32** : it helps to eliminate the effects of lighting variations on the appearance of the object being reconstructed.
+2. Divide each pixel by the correspending light intensity : remove the effect of the lighting conditions on the image to have a consistent level of image intensities, which makes it easier to reconstruct the 3D structure of the object.
+3. Convert images into grey scale : which simplifies the image, reduces the amount of data that needs to be processed, improves the accuracy of the 3D reconstruction process, and increases its efficiency.
+4. Get the needle map : it is a representation of the surface normals of the object being reconstructed. The calculation of the needle map is an important step because it provides information about the orientation of the surface at each pixel in the image. This information is used to reconstruct the 3D shape of the object accurately.
+5. Estimate the depth or z-coordinate using the needle map.

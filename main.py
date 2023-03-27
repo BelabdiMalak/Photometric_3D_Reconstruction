@@ -1,91 +1,105 @@
-import cv2 as cv
+import matplotlib.pyplot as plt
 import numpy as np
+import cv2
 import math
 
 
-def fileToMatrix(path):
-    with open(path, 'r', encoding='utf-8') as file:
-        lines = file.readlines()
-        matrixString = [line.split(' ') for line in lines]
-        return [[float(item) for item in line] for line in matrixString]
+LIGHT_DIRECTIONS_PATH  = 'data/light_directions.txt'
+LIGHT_INTENSITIES_PATH = 'data/light_intensities.txt'
+IMAGES_NAMES_PATH = 'data/filenames.txt'
+MASK_PATH = 'data/mask.png'
+IMAGES_PATH = 'data/'
 
 
-def imgNames():
-    with open('data/filenames.txt', 'r', encoding='utf-8') as file:
-        names = file.readlines()
-        return [name.strip('\n') for name in names]
-    
+def load_light_info(file):
+    return np.genfromtxt(file, delimiter=' ')
 
-def binaryMask():
-    mask = cv.imread('data/mask.png', cv.IMREAD_UNCHANGED)
+
+def load_mask():
+    mask = cv2.imread(MASK_PATH, cv2.IMREAD_UNCHANGED)
     if mask is None: 
         print('Couldn\'t load the mask object')
     else:
-        binaryMask = np.zeros(mask.shape, np.uint8)
-        cv.threshold(mask, 0, 1, cv.THRESH_BINARY, binaryMask)
-        return binaryMask
+        binary_mask = np.zeros(mask.shape, np.uint8)
+        cv2.threshold(mask, 0, 1, cv2.THRESH_BINARY, binary_mask)
+        return binary_mask 
 
 
+def load_img_names():
+    with open(IMAGES_NAMES_PATH, 'r', encoding='utf-8') as file:
+        names = file.readlines()
+        return [name.strip('\n') for name in names]
 
-def loadImages():
-    lightIntensities = fileToMatrix('data/light_intensities.txt')
+
+def normalize_img():
+    intensities = load_light_info(LIGHT_INTENSITIES_PATH)
     i = 0
     images=[]
-    for name in imgNames():
-        img = cv.imread("data/"+name, cv.IMREAD_UNCHANGED)
-        if img is None:
-            print('Couldn\'t load '+ name + 'image')
+    for name in load_img_names():
+        image = cv2.imread(IMAGES_PATH+name, cv2.IMREAD_UNCHANGED)
+        if image is None:
+            print('Couldn\'t load image:'+ name)
         else: 
-            h, w, c = img.shape
-            # unit16 => Float32
-            imgNormalized = cv.normalize(img, None, 0, 1, cv.NORM_MINMAX, dtype=cv.CV_32F)
-            imgNormalized[:,:,0] = imgNormalized[:,:,0] / lightIntensities[i][2]
-            imgNormalized[:,:,1] = imgNormalized[:,:,1] / lightIntensities[i][1]
-            imgNormalized[:,:,2] = imgNormalized[:,:,2] / lightIntensities[i][0] 
-            imgGreyScale = cv.cvtColor(imgNormalized, cv.COLOR_BGR2GRAY)
-            # image dimension: (h, w, c) => (h*w,)
-            images.append(imgGreyScale.flatten())
+            image = cv2.normalize(image, None, 0, 1, cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+            image[:,:,0] = image[:,:,0] / intensities[i][2]
+            image[:,:,1] = image[:,:,1] / intensities[i][1]
+            image[:,:,2] = image[:,:,2] / intensities[i][0] 
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            images.append(image.flatten())
             i+=1
     return images
 
 
-# Get the normal vector (x,y,z) of every pixel of all images (313344 pixels)
-def needleMap():
-    # get the inverse of light directions matrix (from 96*3 to 3*96)
-    lightDirectionsInv = np.linalg.pinv(fileToMatrix('data/light_directions.txt'))
-    images = loadImages()
-    return np.dot(lightDirectionsInv, images)
+def get_needle_map():
+    s_i = np.linalg.pinv(load_light_info(LIGHT_DIRECTIONS_PATH))
+    e = normalize_img()
+    n = np.dot(s_i, e)
+    return n
 
-def showImg2D():
-    normalVectors = needleMap()
-    mask = binaryMask()
-    h,w = mask.shape
-    i = 0
-    
+
+def img_2D_3D():
+    needle_map = get_needle_map()
+    mask = load_mask()
+    h, w = mask.shape
+    # Reshape image (3,h*w) => (3, h, w)
+    i=0
     image = np.zeros((3,h,w), np.float32)
-    for line in normalVectors:
-        matrix = np.reshape(line, (-1,w))
-        image[i] = matrix
+    for j in needle_map:
+        image[i] = np.reshape(j, (-1,w))
         i+=1
-
-    # Reshape & show 2D image (RVB)
-    img2D = np.zeros((h,w,3),np.float32)
+    
+    image2D = np.zeros((h,w,3), np.float32)
     for y in range(h):
         for x in range(w):
-            img2D[y,x] = [image[0,y,x], image[1,y,x], image[2,y,x]]
-    
-    cv.imshow('2D',img2D)
+            image2D[y,x] = [image[0,y,x], image[1,y,x], image[2,y,x]]
 
-    img3D = np.zeros((h,w,3), np.float32)
+    image3D = np.zeros((h,w,3),np.float32)
     for y in range(h):
         for x in range(w):
             if(mask[y,x]==1):
-                n = math.sqrt(img2D[y,x,0]**2 + img2D[y,x,1]**2  + img2D[y,x,2]**2)
+                n = math.sqrt(image2D[y,x,0]**2 + image2D[y,x,1]**2  + image2D[y,x,2]**2)
                 for z in range(3):
-                    img3D[y,x,z] = (float)(img2D[y,x,z])
-                    img3D[y,x,z] = ((img3D[y,x,z])/n+1.)/2.
+                    image3D[y,x,z] = (float)(image2D[y,x,z])
+                    image3D[y,x,z] = ((image3D[y,x,z])/n+1.)/2.
+    return image2D, image3D
 
-    cv.imshow('3D',img3D)
-    cv.waitKey(0)
-    cv.destroyAllWindows(0)
 
+def main():
+    image2D, image3D = img_2D_3D()
+    
+    fig, ax2D = plt.subplots()
+    ax2D.imshow(image2D, cmap='gray')
+    ax2D.set_title('2D object')
+    ax2D.set_xlabel('x axis')
+    ax2D.set_ylabel('y axis')
+    plt.show()
+
+    fig, ax3D = plt.subplots()
+    ax3D.imshow(image3D, cmap='gray')
+    ax3D.set_title('3D object')
+    ax3D.set_xlabel('x ax2Dis')
+    ax3D.set_ylabel('y ax2Dis')
+    plt.show()
+
+if __name__ == '__main__':
+	main()
