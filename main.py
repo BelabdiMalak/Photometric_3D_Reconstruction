@@ -89,16 +89,16 @@ def main():
     
     fig, ax2D = plt.subplots()
     ax2D.imshow(image2D, cmap='gray')
-    ax2D.set_title('2D object')
+    ax2D.set_title('2D object (RGB)')
     ax2D.set_xlabel('x axis')
     ax2D.set_ylabel('y axis')
     plt.show()
 
     fig, ax3D = plt.subplots()
     ax3D.imshow(image3D, cmap='gray')
-    ax3D.set_title('3D object')
-    ax3D.set_xlabel('x ax2Dis')
-    ax3D.set_ylabel('y ax2Dis')
+    ax3D.set_title('3D object (Needle map & Z-coordinate)')
+    ax3D.set_xlabel('x axis')
+    ax3D.set_ylabel('y axis')
     plt.show()
 
 if __name__ == '__main__':
