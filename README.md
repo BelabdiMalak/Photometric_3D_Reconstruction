@@ -32,3 +32,17 @@ To create the 3D object I followed the following steps:
 ### **2. Reconstruction of the 3D object**
 - Calculate the **needle map** : a representation of the surface normals of the object being reconstructed. The calculation of the needle map is an important step because it provides information about the orientation of the surface at each pixel in the image.
 - Estimate the depth or z-coordinate using the needle map.
+
+## **Screenshots**
+1. One of 96 images
+
+![](data/009.png)
+
+2. The 2D object extracted from the 96 normalized images 
+
+![](data/2D.png)
+
+3. The 3D object extracted by calculating the needle map and the z-coordinate
+<p align="center">
+![](data/3D.png)
+</p>

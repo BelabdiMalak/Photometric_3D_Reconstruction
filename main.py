@@ -67,7 +67,6 @@ def img_2D_3D():
     for j in needle_map:
         image[i] = np.reshape(j, (-1,w))
         i+=1
-    
     image2D = np.zeros((h,w,3), np.float32)
     for y in range(h):
         for x in range(w):
@@ -86,20 +85,10 @@ def img_2D_3D():
 
 def main():
     image2D, image3D = img_2D_3D()
-    
-    fig, ax2D = plt.subplots()
-    ax2D.imshow(image2D, cmap='gray')
-    ax2D.set_title('2D object (RGB)')
-    ax2D.set_xlabel('x axis')
-    ax2D.set_ylabel('y axis')
-    plt.show()
-
-    fig, ax3D = plt.subplots()
-    ax3D.imshow(image3D, cmap='gray')
-    ax3D.set_title('3D object (Needle map & Z-coordinate)')
-    ax3D.set_xlabel('x axis')
-    ax3D.set_ylabel('y axis')
-    plt.show()
+    cv2.imshow('2D image (normalized)', image2D)
+    cv2.imshow('3D image', image3D)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows
 
 if __name__ == '__main__':
 	main()
