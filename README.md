@@ -31,7 +31,7 @@ To create the 3D object I followed the following steps:
 - Convert images into grey scale : which simplifies the image, reduces the amount of data that needs to be processed, improves the accuracy of the 3D reconstruction process, and increases its efficiency.
 ### **2. Reconstruction of the 3D object**
 - Calculate the **needle map** : a representation of the surface normals of the object being reconstructed. The calculation of the needle map is an important step because it provides information about the orientation of the surface at each pixel in the image.
-- Estimate the depth or z-coordinate using the needle map.
+- Estimate the **depth** or **z-coordinate** using the needle map : typically refers to the distance of a point in a 3D scene from the camera. In other words, the "z coordinate" represents the third dimension of a point in the 3D space, with the other two dimensions being the x and y coordinates.
 
 ## **Screenshots**
 1. One of 96 images
