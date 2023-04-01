@@ -36,13 +36,12 @@ To create the 3D object I followed the following steps:
 ## **Screenshots**
 1. One of 96 images
 
-![](data/009.png)
+<div style="text-align:center"><img src="data/84.png" /></div>
 
 2. The 2D object extracted from the 96 normalized images 
 
-![](data/2D.png)
+<div style="text-align:center"><img src="data/2D.png" /></div>
 
 3. The 3D object extracted by calculating the needle map and the z-coordinate
-<p align="center">
-![](data/3D.png)
-</p>
+
+<div style="text-align:center"><img src="data/3D.png" /></div>
